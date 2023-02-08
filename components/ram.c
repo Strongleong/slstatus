@@ -76,6 +76,38 @@
 		return fmt_human((total - free - buffers - cached) * 1024,
 		                 1024);
 	}
+
+	const char *
+	ram_total_gb(void)
+	{
+		uintmax_t total;
+
+		if (pscanf("/proc/meminfo", "MemTotal: %ju kB\n", &total)
+		    != 1) {
+			return NULL;
+		}
+
+		return bprintf("%.1f", (float)(total) / 1024 / 1024);
+	}
+
+	const char *
+	ram_used_gb(void)
+	{
+		uintmax_t total, free, buffers, cached;
+
+		if (pscanf("/proc/meminfo",
+		           "MemTotal: %ju kB\n"
+		           "MemFree: %ju kB\n"
+		           "MemAvailable: %ju kB\n"
+		           "Buffers: %ju kB\n"
+		           "Cached: %ju kB\n",
+		           &total, &free, &buffers, &buffers, &cached) != 5) {
+			return NULL;
+		}
+
+		return bprintf("%.1f", (float)(total - free - buffers - cached) / 1024 / 1024);
+	}
+
 #elif defined(__OpenBSD__)
 	#include <stdlib.h>
 	#include <sys/sysctl.h>
